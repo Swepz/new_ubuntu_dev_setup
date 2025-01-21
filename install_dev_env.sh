@@ -23,8 +23,16 @@ ensure_dir() {
 }
 
 # Install oh my bash
+echo "Installing Oh-My-Bash..."
 cd ~/
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+# Download the install script but don't execute it directly
+curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh -o install-oh-my-bash.sh
+# Modify the script to run non-interactively
+sed -i 's:${RUNZSH:-yes}:no:g' install-oh-my-bash.sh
+# Run the modified script
+bash install-oh-my-bash.sh
+# Clean up
+rm install-oh-my-bash.sh
 check_status "Installing Oh-My-Bash"
 
 # Update and install basic packages
@@ -160,15 +168,6 @@ echo "Installing pip3..."
 sudo apt install python3-pip -y
 check_status "pip3 installation"
 
-# Install Gazebo Fortress
-echo "Installing Gazebo Fortress..."
-sudo apt-get install lsb-release gnupg -y
-sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
-sudo apt-get update
-sudo apt-get install ignition-fortress -y
-check_status "Gazebo Fortress installation"
-
 # Install ROS2 Humble
 echo "Installing ROS2 Humble..."
 ensure_dir ~/Downloads
@@ -196,56 +195,13 @@ echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
 echo 'source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash' >> ~/.bashrc
 echo 'source /usr/share/colcon_cd/function/colcon_cd.sh' >> ~/.bashrc
 echo 'export _colcon_cd_root=/opt/ros/humble/' >> ~/.bashrc
+echo 'export TURTLEBOT3_MODEL=burger' >> ~/.bashrc
+echo 'export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gazebo/models' >> ~/.bashrc
 echo 'source $HOME/.cargo/env' >> ~/.bashrc
 echo '' >> ~/.bashrc
 echo '# Aliases' >> ~/.bashrc
 echo 'alias vim=nvim' >> ~/.bashrc
 check_status "ROS2 environment configuration"
-
-# Install SpaceVim
-echo "Installing SpaceVim..."
-# Remove existing installations if they exist
-rm -rf ~/.SpaceVim ~/.vim ~/.config/nvim 2>/dev/null || true
-# Install SpaceVim
-curl -sLf https://spacevim.org/install.sh | bash
-check_status "SpaceVim installation"
-
-# Configure SpaceVim
-echo "Configuring SpaceVim..."
-ensure_dir ~/.SpaceVim.d
-cat > ~/.SpaceVim.d/init.toml << 'EOL'
-[options]
-    colorscheme = "gruvbox"
-    colorscheme_bg = "dark"
-    enable_guicolors = true
-    statusline_separator = "nil"
-    statusline_iseparator = "bar"
-    buffer_index_type = 4
-    enable_tabline_filetype_icon = true
-    enable_statusline_mode = false
-
-[[layers]]
-    name = "autocomplete"
-    auto-completion-return-key-behavior = "complete"
-    auto-completion-tab-key-behavior = "cycle"
-
-[[layers]]
-    name = "shell"
-    default_position = "top"
-    default_height = 30
-
-[[custom_plugins]]
-    repo = "lilydjwg/colorizer"
-    merged = false
-
-[[layers]]
-    name = "lang#python"
-
-[[layers]]
-    name = 'lang#c'
-    enable_clang_syntax_highlight = true
-EOL
-check_status "SpaceVim configuration"
 
 # Install Python development tools
 echo "Installing Python development tools..."
@@ -256,6 +212,5 @@ echo "Installation completed successfully!"
 echo ""
 echo "Important post-installation steps:"
 echo "1. Please restart your terminal for all changes to take effect"
-echo "2. The first time you open Vim or Neovim, SpaceVim will install plugins automatically"
-echo "3. To set Alacritty as your default terminal, run: sudo update-alternatives --config x-terminal-emulator"
-echo "4. You may need to log out and back in for all font changes to take effect"
+echo "2. To set Alacritty as your default terminal, run: sudo update-alternatives --config x-terminal-emulator"
+echo "3. You may need to log out and back in for all font changes to take effect"
