@@ -168,6 +168,44 @@ echo "Installing pip3..."
 sudo apt install python3-pip -y
 check_status "pip3 installation"
 
+# Install Docker
+echo "Installing Docker..."
+sudo apt update
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+check_status "Docker prerequisites installation"
+
+echo "Adding Docker repository..."
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+check_status "Docker repository configuration"
+
+echo "Installing Docker CE..."
+sudo apt update
+sudo apt install -y docker-ce
+check_status "Docker CE installation"
+
+echo "Adding user to docker group..."
+sudo usermod -aG docker ${USER}
+check_status "Docker user configuration"
+
+# Install VSCode
+echo "Installing Visual Studio Code..."
+
+# Download and import the Microsoft GPG key
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -D -o root -g root -m 644 packages.microsoft.gpg /usr/share/keyrings/packages.microsoft.gpg
+rm -f packages.microsoft.gpg
+
+# Add the VS Code repository
+echo "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | \
+    sudo tee /etc/apt/sources.list.d/vscode.list
+
+# Update package cache and install VS Code
+sudo apt update
+sudo apt install -y code
+
+check_status "VS Code installation"
+
 # Install ROS2 Humble
 echo "Installing ROS2 Humble..."
 ensure_dir ~/Downloads
